@@ -42,6 +42,7 @@
       gap: 10px;
       align-items: center;
       justify-content: center;
+      position: relative; /* Ses kontrolleri için konumlandırma */
     }
     .pill {
       background: #121735;
@@ -170,18 +171,13 @@
       from { opacity: 1; }
       to { opacity: 0.2; }
     }
+    /* Ses kontrol butonlarının yeni konumu için stiller */
     .audio-controls {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      z-index: 100;
       display: flex;
+      align-items: center;
+      justify-content: center;
       gap: 10px;
-      background: rgba(15, 20, 48, 0.8);
-      border: 1px solid #2b3569;
-      padding: 8px 12px;
-      border-radius: 10px;
-      backdrop-filter: blur(6px);
+      margin-top: 10px;
     }
     .audio-btn {
       background: #4aa3ff;
@@ -245,6 +241,18 @@
     <div class="pill">
       Points — Yellow:50 • Red:10 • Blue:2.5 • White:1
     </div>
+    <!-- Ses Kontrolleri buraya taşındı -->
+    <div class="audio-controls">
+      <button id="playPauseBtn" class="audio-btn">
+        <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+        </svg>
+      </button>
+      <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+    </div>
   </header>
   <main id="wrap">
     <canvas id="game"></canvas>
@@ -270,20 +278,6 @@
           <button id="startButton" class="btn">Start!</button>
         </div>
       </div>
-    </div>
-
-    <!-- Ses Kontrolleri -->
-    <div class="audio-controls">
-      <button id="playPauseBtn" class="audio-btn">
-        <!-- SVG ikonu -->
-        <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M8 5v14l11-7z"/>
-        </svg>
-        <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
-          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-        </svg>
-      </button>
-      <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
     </div>
   </main>
   <footer>
@@ -667,7 +661,6 @@
       }
       
       // --- Ses Kontrolü ---
-      // Ses dosyasının yeni yolu: assets/The Blaze - Territory.mp3
       const audio = new Audio("assets/The Blaze - Territory.mp3");
       audio.loop = true;
       
@@ -706,25 +699,6 @@
           isPlaying = true;
         }
       });
-      
-      // Oyun bittiğinde sesi durdurma
-      const originalShowGameOver = showGameOver;
-      showGameOver = function() {
-        originalShowGameOver();
-        audio.pause();
-        isPlaying = false;
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
-      };
-      
-      const originalShowWin = showWin;
-      showWin = function() {
-        originalShowWin();
-        audio.pause();
-        isPlaying = false;
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
-      };
       
       // --- Initial call to show how to play screen ---
       resize();
