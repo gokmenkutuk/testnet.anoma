@@ -265,8 +265,9 @@
     </div>
     <div class="audio-controls">
       <button id="prevBtn" class="audio-btn">
+        <!-- SVG for previous track button, now pointing left -->
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M18 18V6H16v12h2zM6 18l8.5-6L6 6v12z"/>
+          <path d="M6 18V6h2v12H6zM18 18L9.5 12 18 6v12z"/>
         </svg>
       </button>
       <button id="playPauseBtn" class="audio-btn">
@@ -686,7 +687,6 @@
       }
       
       // --- Müzik Kontrolü ve Çalma Listesi ---
-      // Lütfen "assets/..." kısmındaki dosya yollarını kendi şarkılarınızın yolları ile değiştirin.
       const playlist = [
         { path: "assets/The Blaze - Territory.mp3", title: "The Blaze - Territory" },
         { path: "assets/Gorillaz - Feel Good Inc. (Official Video).mp3", title: "Gorillaz - Feel Good Inc." },
