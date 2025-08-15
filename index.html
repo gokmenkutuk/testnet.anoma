@@ -322,7 +322,7 @@
 
   <script>
     (() => {
-      // --- Oyun Sabitleri ve Durumu ---
+      // --- Game Constants and State ---
       const canvas = document.getElementById('game');
       const ctx = canvas.getContext('2d');
       let W = 0, H = 0, laneW = 0, laneX = [];
@@ -331,22 +331,20 @@
 
       let score = 0;
       let lives = 3;
-      let speed = 0.5; // Başlangıç hızı
+      let speed = 0.5;
       
-      // Puana göre hız artışı
       const speedIncreaseScores = [4, 15, 50, 75, 150, 175];
       let nextSpeedIncreaseIndex = 0;
-      const SPEED_INCREASE_AMOUNT = 0.2; // Artış miktarı
-      const MAX_SPEED = 3.5; // Maksimum hız
+      const SPEED_INCREASE_AMOUNT = 0.2;
+      const MAX_SPEED = 3.5;
 
-      // --- Oyuncu Durumu ---
+      // --- Player State ---
       const player = { lane: 1, y: 0, w: 0, h: 0, isInvulnerable: false, x: 0, targetX: 0 };
       let invulnerabilityTimer = 0;
-      const invulnerabilityDuration = 3000; // 3 saniye
+      const invulnerabilityDuration = 3000;
 
-      // --- Top (Ball) Tipleri ---
+      // --- Collectible (Ball) Types ---
       const BALLS = [
-        // Ağırlıklar güncellendi. Kırmızı ve sarı top sayıları hafifçe azaltıldı.
         { name: 'white', color: '--white', score: 1, weight: 170 / 200 },
         { name: 'blue', color: '--blue', score: 2.5, weight: 20 / 200 },
         { name: 'red', color: '--red', score: 10, weight: 9 / 200 },
@@ -354,13 +352,13 @@
       ];
       const totalWeight = BALLS.reduce((sum, ball) => sum + ball.weight, 0);
       BALLS.forEach(ball => ball.p = ball.weight / totalWeight);
-      const drops = []; // Toplar ve engeller
+      const drops = []; // balls and obstacles
 
-      // --- Oluşturma Zamanlayıcıları ---
+      // --- Spawning Timers ---
       let ballSpawnTimer = 0, ballSpawnPeriod = 700;
-      let obstacleSpawnTimer = 0, obstacleSpawnPeriod = 800; // Daha sık ve rastgele engeller
+      let obstacleSpawnTimer = 0, obstacleSpawnPeriod = 800;
 
-      // --- Çizim Yardımcıları ---
+      // --- Drawing Helpers ---
       const cssColors = new Map();
       function getCssVar(name) {
         if (!cssColors.has(name)) {
@@ -399,7 +397,6 @@
       }
       
       function drawObstacle(x, y, h, color) {
-        // Tam şerit genişliğinde bir engel çiz
         ctx.fillStyle = color;
         ctx.beginPath();
         ctx.rect(x - laneW / 2, y - h / 2, laneW, h); 
@@ -429,11 +426,10 @@
       window.addEventListener('resize', resize);
       window.addEventListener('orientationchange', resize);
 
-      // --- Oyuncu (Karides) Mantığı ---
+      // --- Player (Shrimp) Logic ---
       function moveLane(dir) {
         if (running) {
           player.lane = Math.max(0, Math.min(LANES - 1, player.lane + dir));
-          // Şerit değiştirme, tuşa basıldığında anında gerçekleşir
           player.x = laneX[player.lane];
           player.targetX = laneX[player.lane];
         }
@@ -442,7 +438,6 @@
         if (e.key === 'ArrowLeft') moveLane(-1);
         if (e.key === 'ArrowRight') moveLane(1);
       });
-      // Dokunmatik kontroller ekle
       canvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
         const touchX = e.touches[0].clientX;
@@ -453,7 +448,7 @@
         }
       });
       
-      // --- Oluşturma ve Hareket Mantığı ---
+      // --- Spawning and Movement Logic ---
       function rngKind() {
         const r = Math.random();
         let acc = 0;
@@ -473,27 +468,22 @@
 
       function spawnObstacle() {
         const obsHeight = Math.max(20, laneW * 0.2);
-        
-        // %25 şansla iki şeritte engel oluştur
         if (Math.random() < 0.25) {
           const lane1 = Math.floor(Math.random() * LANES);
           let lane2 = Math.floor(Math.random() * LANES);
-          while(lane2 === lane1) { // İkinci şeridin farklı olmasını sağla
+          while(lane2 === lane1) {
             lane2 = Math.floor(Math.random() * LANES);
           }
           drops.push({ type: 'obstacle', lane: lane1, y: -obsHeight, h: obsHeight });
           drops.push({ type: 'obstacle', lane: lane2, y: -obsHeight, h: obsHeight });
         } else {
-          // Normal oluşturma, tek bir engel
           const lane = Math.floor(Math.random() * LANES);
           drops.push({ type: 'obstacle', lane, y: -obsHeight, h: obsHeight });
         }
-
-        // Engel oluşturma periyoduna biraz rastgelelik ekle
         obstacleSpawnPeriod = 700 + Math.random() * 500;
       }
 
-      // --- Oyun Bitti / Kazanma Mantığı ---
+      // --- Game Over / Win Logic ---
       const endOverlay = document.getElementById('endOverlay');
       const howToPlayOverlay = document.getElementById('howToPlayOverlay');
       const startButton = document.getElementById('startButton');
@@ -507,7 +497,6 @@
       retryBtn.addEventListener('click', () => { reset(); });
       continueBtn.addEventListener('click', () => { continueGame(); });
       exitBtn.addEventListener('click', () => {
-        // Nasıl oynanır ekranını göster ve oyunu durdur
         endOverlay.style.display = 'none';
         howToPlayOverlay.style.display = 'flex';
         running = false;
@@ -515,42 +504,53 @@
 
       function showGameOver() {
         endTitle.textContent = 'Oyun Bitti!';
-        // Skor 10 ile çarpılarak gösterilir
         endStats.textContent = `Skorunuz: ${fmt(score * 10)}`;
         continueBtn.style.display = 'none';
         endOverlay.style.display = 'flex';
-        running = false; // Oyun döngüsünü durdur
+        running = false; // Stop the game loop
       }
       
       function showWin() {
         endTitle.textContent = 'Tebrikler, Hedefi Tamamladınız!';
-        // 200 puanı geçmek için özel mesaj
         endStats.textContent = `200 puanı geçtiniz! Toplam skorunuz: ${fmt(score * 10)}`;
         continueBtn.style.display = 'inline-block';
         endOverlay.style.display = 'flex';
-        running = false; // Oyun döngüsünü durdur
+        running = false; // Stop the game loop
       }
 
-      // --- Oyun Döngüsü ve Temel Mantık ---
+      // --- Game Loop and Core Logic ---
       let running = false, lastTime = 0;
+      let animationFrameId = null;
 
       function reset() {
+        // Cancel any existing animation frame to prevent multiple loops
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+
         running = true;
         lastTime = performance.now();
         score = 0;
         lives = 3;
-        speed = 0.5; // Başlangıç hızına sıfırla
-        nextSpeedIncreaseIndex = 0; // Hız artışı takibini sıfırla
+        speed = 0.5;
+        nextSpeedIncreaseIndex = 0;
         drops.length = 0;
         player.isInvulnerable = false;
         invulnerabilityTimer = 0;
         howToPlayOverlay.style.display = 'none';
         endOverlay.style.display = 'none';
         resize();
-        requestAnimationFrame(loop);
+        
+        // Start a fresh game loop
+        animationFrameId = requestAnimationFrame(loop);
       }
 
       function continueGame() {
+        // Stop any previous game loop
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+        
         running = true;
         lastTime = performance.now();
         score = 0;
@@ -561,18 +561,19 @@
         invulnerabilityTimer = 0;
         endOverlay.style.display = 'none';
         resize();
-        requestAnimationFrame(loop);
+        animationFrameId = requestAnimationFrame(loop);
       }
 
       function loop(t) {
         if (!running) {
-            return; // Eğer oyun çalışmıyorsa döngüyü durdur
+            // If the game is not running, stop the loop.
+            // This is a safety check. The loop should be canceled when the game ends.
+            return;
         }
 
         const dt = Math.min(32, (t || performance.now()) - lastTime);
         lastTime = t || performance.now();
 
-        // Dokunulmazlık titreşim zamanlayıcısı
         if (player.isInvulnerable) {
           invulnerabilityTimer += dt;
           if (invulnerabilityTimer >= invulnerabilityDuration) {
@@ -581,7 +582,6 @@
           }
         }
 
-        // Oluşturma mantığı
         ballSpawnTimer += dt;
         if (ballSpawnTimer >= ballSpawnPeriod) {
           spawnBall();
@@ -593,19 +593,16 @@
           obstacleSpawnTimer = 0;
         }
 
-        // Hareket
         const vy = (speed * dt * H) / 700;
         for (const d of drops) {
           d.y += vy;
         }
 
-        // Çarpışma tespiti ve temizleme
         const py = player.y + player.h * 0.5;
         const pr = Math.min(player.w, player.h) * 0.4;
         
         for (let i = drops.length - 1; i >= 0; i--) {
           const d = drops[i];
-          // Aynı şeritte çarpışma kontrolü
           if (d.lane === player.lane) {
             let collided = false;
             if (d.type === 'ball') {
@@ -622,7 +619,6 @@
                 score += d.kind.score;
                 drops.splice(i, 1);
                 
-                // Puan hedefleri karşılandığında hızı artır
                 if (nextSpeedIncreaseIndex < speedIncreaseScores.length && score >= speedIncreaseScores[nextSpeedIncreaseIndex]) {
                   speed = Math.min(MAX_SPEED, speed + SPEED_INCREASE_AMOUNT);
                   nextSpeedIncreaseIndex++;
@@ -635,7 +631,7 @@
                   invulnerabilityTimer = 0;
                   if (lives <= 0) {
                     showGameOver();
-                    // Burada durdurulacak, bu yüzden döngü tekrar çağrılmayacak
+                    cancelAnimationFrame(animationFrameId); // Immediately cancel next loop
                     return; 
                   }
                 }
@@ -644,27 +640,23 @@
           }
         }
 
-        // Ekran sınırı temizliği
         for (let i = drops.length - 1; i >= 0; i--) {
           if (drops[i].y > H + drops[i].r) {
             drops.splice(i, 1);
           }
         }
 
-        // Kazanma koşulunu kontrol et
         if (score >= TARGET_SCORE) {
           showWin();
-          return; // Kazanma durumunda döngüyü durdur
+          cancelAnimationFrame(animationFrameId); // Immediately cancel next loop
+          return;
         }
 
-        // --- Çizim ---
         ctx.clearRect(0, 0, W, H);
         drawBackground();
         
-        // Oyuncuyu (Karides emojisi) çiz
         const pY = player.y + player.h * 0.5;
 
-        // Dokunulmazsa titreşim efekti uygula
         if (!player.isInvulnerable || (player.isInvulnerable && invulnerabilityTimer % 200 < 100)) {
           ctx.fillStyle = getCssVar('--text');
           ctx.font = `bold ${player.w * 0.7}px sans-serif`;
@@ -673,7 +665,6 @@
           ctx.fillText('🦐', player.x, pY);
         }
         
-        // Topları ve engelleri çiz
         for (const d of drops) {
           if (d.type === 'ball') {
             drawBall(laneX[d.lane], d.y, d.r, getCssVar(d.kind.color));
@@ -682,16 +673,15 @@
           }
         }
 
-        // HUD'yi çiz
         ctx.fillStyle = getCssVar('--text');
         ctx.font = 'bold 16px system-ui';
         ctx.textAlign = 'left';
-        ctx.textBaseline = 'top'; // Metin taban çizgisini sıfırla
+        ctx.textBaseline = 'top';
         ctx.fillText(`Skor: ${fmt(score)} / ${TARGET_SCORE}`, 12, 22);
         ctx.fillText(`Canlar: ${lives}`, 12, 44);
 
         if (running) {
-          requestAnimationFrame(loop);
+          animationFrameId = requestAnimationFrame(loop);
         }
       }
       
@@ -699,8 +689,8 @@
       // Lütfen "assets/..." kısmındaki dosya yollarını kendi şarkılarınızın yolları ile değiştirin.
       const playlist = [
         { path: "assets/The Blaze - Territory.mp3", title: "The Blaze - Territory" },
-        { path: "assets/The Blaze - Territory.mp3", title: "Şarkı 2 (Placeholder)" },
-        { path: "assets/The Blaze - Territory.mp3", title: "Şarkı 3 (Placeholder)" },
+        { path: "assets/Gorillaz - Feel Good Inc. (Official Video).mp3", title: "Gorillaz - Feel Good Inc." },
+        { path: "assets/Summit.mp3", title: "Summit" },
       ];
       let currentTrackIndex = 0;
       
@@ -761,7 +751,6 @@
         audio.volume = e.target.value;
       });
 
-      // Oyun başladığında otomatik oynatma ve şarkı adını güncelleme
       startButton.addEventListener('click', () => {
         reset();
         if (!isPlaying) {
@@ -773,7 +762,6 @@
         updateSongTitleDisplay();
       });
       
-      // --- Başlangıçta nasıl oynanır ekranını gösterme ve şarkı adını güncelleme ---
       resize();
       updateSongTitleDisplay();
     })();
