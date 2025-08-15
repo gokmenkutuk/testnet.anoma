@@ -170,6 +170,68 @@
       from { opacity: 1; }
       to { opacity: 0.2; }
     }
+    .audio-controls {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      z-index: 100;
+      display: flex;
+      gap: 10px;
+      background: rgba(15, 20, 48, 0.8);
+      border: 1px solid #2b3569;
+      padding: 8px 12px;
+      border-radius: 10px;
+      backdrop-filter: blur(6px);
+    }
+    .audio-btn {
+      background: #4aa3ff;
+      color: var(--text);
+      border: 1px solid #5dacec;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+    .audio-btn:hover {
+      transform: scale(1.05);
+    }
+    #volume-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 80px;
+      height: 8px;
+      background: #5dacec;
+      border-radius: 5px;
+      outline: none;
+      opacity: 0.7;
+      transition: opacity .2s;
+    }
+    #volume-slider:hover {
+      opacity: 1;
+    }
+    #volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #4aa3ff;
+      border: 1px solid var(--text);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    #volume-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: #4aa3ff;
+      border: 1px solid var(--text);
+      border-radius: 50%;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -208,6 +270,20 @@
           <button id="startButton" class="btn">Start!</button>
         </div>
       </div>
+    </div>
+
+    <!-- Ses Kontrolleri -->
+    <div class="audio-controls">
+      <button id="playPauseBtn" class="audio-btn">
+        <!-- SVG ikonu -->
+        <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+        </svg>
+      </button>
+      <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
     </div>
   </main>
   <footer>
@@ -338,7 +414,17 @@
         if (e.key === 'ArrowLeft') moveLane(-1);
         if (e.key === 'ArrowRight') moveLane(1);
       });
-
+      // Dokunmatik kontrol ekleme
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touchX = e.touches[0].clientX;
+        if (touchX < W / 2) {
+          moveLane(-1);
+        } else {
+          moveLane(1);
+        }
+      });
+      
       // --- Spawning and Movement Logic ---
       function rngKind() {
         const r = Math.random();
@@ -579,8 +665,68 @@
           requestAnimationFrame(loop);
         }
       }
+      
+      // --- Ses Kontrolü ---
+      // Ses dosyasının yeni yolu: assets/The Blaze - Territory.mp3
+      const audio = new Audio("assets/The Blaze - Territory.mp3");
+      audio.loop = true;
+      
+      const playPauseBtn = document.getElementById('playPauseBtn');
+      const playIcon = document.getElementById('playIcon');
+      const pauseIcon = document.getElementById('pauseIcon');
+      const volumeSlider = document.getElementById('volume-slider');
+      let isPlaying = false;
+      
+      function togglePlayPause() {
+        if (isPlaying) {
+          audio.pause();
+          playIcon.style.display = 'block';
+          pauseIcon.style.display = 'none';
+        } else {
+          audio.play().catch(e => console.error("Ses oynatma hatası:", e));
+          playIcon.style.display = 'none';
+          pauseIcon.style.display = 'block';
+        }
+        isPlaying = !isPlaying;
+      }
+      
+      playPauseBtn.addEventListener('click', togglePlayPause);
+      
+      volumeSlider.addEventListener('input', (e) => {
+        audio.volume = e.target.value;
+      });
 
-      // Initial call to show how to play screen
+      // Oyun başladığında sesi otomatik oynatma
+      startButton.addEventListener('click', () => {
+        reset();
+        if (!isPlaying) {
+          audio.play().catch(e => console.error("Oyun başlangıcında ses oynatma hatası:", e));
+          playIcon.style.display = 'none';
+          pauseIcon.style.display = 'block';
+          isPlaying = true;
+        }
+      });
+      
+      // Oyun bittiğinde sesi durdurma
+      const originalShowGameOver = showGameOver;
+      showGameOver = function() {
+        originalShowGameOver();
+        audio.pause();
+        isPlaying = false;
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+      };
+      
+      const originalShowWin = showWin;
+      showWin = function() {
+        originalShowWin();
+        audio.pause();
+        isPlaying = false;
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+      };
+      
+      // --- Initial call to show how to play screen ---
       resize();
     })();
   </script>
