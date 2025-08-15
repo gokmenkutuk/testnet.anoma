@@ -42,7 +42,7 @@
       gap: 10px;
       align-items: center;
       justify-content: center;
-      position: relative; /* Ses kontrolleri için konumlandırma */
+      position: relative;
     }
     .pill {
       background: #121735;
@@ -171,7 +171,6 @@
       from { opacity: 1; }
       to { opacity: 0.2; }
     }
-    /* Ses kontrol butonlarının yeni konumu için stiller */
     .audio-controls {
       display: flex;
       align-items: center;
@@ -241,7 +240,6 @@
     <div class="pill">
       Points — Yellow:50 • Red:10 • Blue:2.5 • White:1
     </div>
-    <!-- Ses Kontrolleri buraya taşındı -->
     <div class="audio-controls">
       <button id="playPauseBtn" class="audio-btn">
         <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -252,6 +250,11 @@
         </svg>
       </button>
       <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+      <button id="nextBtn" class="audio-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+        </svg>
+      </button>
     </div>
   </header>
   <main id="wrap">
@@ -408,7 +411,7 @@
         if (e.key === 'ArrowLeft') moveLane(-1);
         if (e.key === 'ArrowRight') moveLane(1);
       });
-      // Dokunmatik kontrol ekleme
+      // Add touch controls
       canvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
         const touchX = e.touches[0].clientX;
@@ -660,14 +663,22 @@
         }
       }
       
-      // --- Ses Kontrolü ---
-      const audio = new Audio("assets/The Blaze - Territory.mp3");
+      // --- Audio Control with Playlist ---
+      const playlist = [
+        "assets/The Blaze - Territory.mp3",
+        // Please replace this placeholder with the actual path of your second audio file.
+        "assets/The Blaze - Territory.mp3" 
+      ];
+      let currentTrackIndex = 0;
+      
+      const audio = new Audio(playlist[currentTrackIndex]);
       audio.loop = true;
       
       const playPauseBtn = document.getElementById('playPauseBtn');
       const playIcon = document.getElementById('playIcon');
       const pauseIcon = document.getElementById('pauseIcon');
       const volumeSlider = document.getElementById('volume-slider');
+      const nextBtn = document.getElementById('nextBtn');
       let isPlaying = false;
       
       function togglePlayPause() {
@@ -676,24 +687,34 @@
           playIcon.style.display = 'block';
           pauseIcon.style.display = 'none';
         } else {
-          audio.play().catch(e => console.error("Ses oynatma hatası:", e));
+          audio.play().catch(e => console.error("Audio playback error:", e));
           playIcon.style.display = 'none';
           pauseIcon.style.display = 'block';
         }
         isPlaying = !isPlaying;
       }
       
+      function playNextTrack() {
+        currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+        audio.src = playlist[currentTrackIndex];
+        audio.load();
+        if (isPlaying) {
+          audio.play().catch(e => console.error("Audio playback error:", e));
+        }
+      }
+      
       playPauseBtn.addEventListener('click', togglePlayPause);
+      nextBtn.addEventListener('click', playNextTrack);
       
       volumeSlider.addEventListener('input', (e) => {
         audio.volume = e.target.value;
       });
 
-      // Oyun başladığında sesi otomatik oynatma
+      // Automatic play on game start
       startButton.addEventListener('click', () => {
         reset();
         if (!isPlaying) {
-          audio.play().catch(e => console.error("Oyun başlangıcında ses oynatma hatası:", e));
+          audio.play().catch(e => console.error("Audio playback error on game start:", e));
           playIcon.style.display = 'none';
           pauseIcon.style.display = 'block';
           isPlaying = true;
