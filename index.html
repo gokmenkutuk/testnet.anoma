@@ -255,19 +255,19 @@
 <body>
   <header>
     <div class="pill">
-      ←/→: Şerit değiştir
+      ←/→: Change Lane
     </div>
     <div class="pill score-info">
-      Hedef: <b>200</b> Puan
+      Target: <b>200</b> Points
     </div>
     <div class="pill">
-      Puanlar — Sarı:50 • Kırmızı:10 • Mavi:2.5 • Beyaz:1
+      Points — Yellow:50 • Red:10 • Blue:2.5 • White:1
     </div>
     <div class="audio-controls">
       <button id="prevBtn" class="audio-btn">
         <!-- SVG for previous track button, now pointing left -->
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M6 18V6h2v12H6zM18 18L9.5 12 18 6v12z"/>
+          <path d="M18 18V6H16v12h2zM6 18l8.5-6L6 6v12z"/>
         </svg>
       </button>
       <button id="playPauseBtn" class="audio-btn">
@@ -293,21 +293,21 @@
         <p class="title" id="endTitle"></p>
         <p id="endStats"></p>
         <div class="end-btns">
-          <button id="continue-btn" class="btn" style="display: none;">Devam Et</button>
-          <button id="retry-btn" class="btn">Tekrar Oyna</button>
-          <button id="exit-btn" class="btn">Çıkış</button>
+          <button id="continue-btn" class="btn" style="display: none;">Continue</button>
+          <button id="retry-btn" class="btn">Retry</button>
+          <button id="exit-btn" class="btn">Exit</button>
         </div>
       </div>
     </div>
 
     <div id="howToPlayOverlay" class="center-overlay" style="display: flex">
       <div class="card">
-        <h2 class="title">Nasıl Oynanır?</h2>
+        <h2 class="title">How to Play</h2>
         <div id="how-to-play-visual">🦐</div>
-        <p>Sol ve sağ ok tuşlarını kullanarak karidesinizi şeritler arasında hareket ettirin.</p>
-        <p>Topları toplayın, turuncu engellerden kaçının!</p>
+        <p>Use the left and right arrow keys to move your shrimp between lanes.</p>
+        <p>Collect balls, avoid orange obstacles!</p>
         <div class="start-btn">
-          <button id="startButton" class="btn">Başla!</button>
+          <button id="startButton" class="btn">Start!</button>
         </div>
       </div>
     </div>
@@ -317,7 +317,7 @@
   </main>
   <footer>
     <p style="font-size: 12px; opacity: 0.7; margin-top: 20px;">
-      Basit bir Canvas oyun motoru ile güçlendirilmiştir.
+      Powered by a simple Canvas game engine.
     </p>
   </footer>
 
@@ -504,16 +504,16 @@
       });
 
       function showGameOver() {
-        endTitle.textContent = 'Oyun Bitti!';
-        endStats.textContent = `Skorunuz: ${fmt(score * 10)}`;
+        endTitle.textContent = 'Game Over!';
+        endStats.textContent = `Your Score: ${fmt(score * 10)}`;
         continueBtn.style.display = 'none';
         endOverlay.style.display = 'flex';
         running = false; // Stop the game loop
       }
       
       function showWin() {
-        endTitle.textContent = 'Tebrikler, Hedefi Tamamladınız!';
-        endStats.textContent = `200 puanı geçtiniz! Toplam skorunuz: ${fmt(score * 10)}`;
+        endTitle.textContent = 'Congratulations, You Reached the Target!';
+        endStats.textContent = `You passed 200 points! Your total score: ${fmt(score * 10)}`;
         continueBtn.style.display = 'inline-block';
         endOverlay.style.display = 'flex';
         running = false; // Stop the game loop
@@ -540,6 +540,10 @@
         invulnerabilityTimer = 0;
         howToPlayOverlay.style.display = 'none';
         endOverlay.style.display = 'none';
+
+        // Reset player to the middle lane (lane 1)
+        player.lane = 1; 
+
         resize();
         
         // Start a fresh game loop
@@ -561,6 +565,10 @@
         player.isInvulnerable = false;
         invulnerabilityTimer = 0;
         endOverlay.style.display = 'none';
+
+        // Reset player to the middle lane (lane 1)
+        player.lane = 1;
+
         resize();
         animationFrameId = requestAnimationFrame(loop);
       }
@@ -678,8 +686,8 @@
         ctx.font = 'bold 16px system-ui';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
-        ctx.fillText(`Skor: ${fmt(score)} / ${TARGET_SCORE}`, 12, 22);
-        ctx.fillText(`Canlar: ${lives}`, 12, 44);
+        ctx.fillText(`Score: ${fmt(score)} / ${TARGET_SCORE}`, 12, 22);
+        ctx.fillText(`Lives: ${lives}`, 12, 44);
 
         if (running) {
           animationFrameId = requestAnimationFrame(loop);
