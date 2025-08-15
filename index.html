@@ -699,12 +699,15 @@
       const playlist = [
         { path: "assets/The Blaze - Territory.mp3", title: "The Blaze - Territory" },
         { path: "assets/Gorillaz - Feel Good Inc. (Official Video).mp3", title: "Gorillaz - Feel Good Inc." },
-        { path: "assets/Summit.mp3", title: "Summit" },
+        { path: "assets/Summit.mp3", title: "Skrillex - Summit" },
+        { path: "assets/M.I.A. - Borders.mp3", title: "M.I.A. - Borders" },
+        { path: "assets/Tove Lo - Habits.mp3", title: "Tove Lo - Habits" },
+        { path: "assets/Azelia Banks - 212.mp3", title: "Azelia Banks - 212" },
       ];
       let currentTrackIndex = 0;
       
       const audio = new Audio(playlist[currentTrackIndex].path);
-      audio.loop = true;
+      audio.loop = false; // Otomatik oynatma için döngüyü kapatıyoruz
       
       const playPauseBtn = document.getElementById('playPauseBtn');
       const prevBtn = document.getElementById('prevBtn');
@@ -758,6 +761,11 @@
       
       volumeSlider.addEventListener('input', (e) => {
         audio.volume = e.target.value;
+      });
+
+      // Müzik bittiğinde otomatik olarak bir sonraki parçayı çalmak için event listener eklendi.
+      audio.addEventListener('ended', () => {
+        playNextTrack();
       });
 
       startButton.addEventListener('click', () => {
