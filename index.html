@@ -227,6 +227,29 @@
       border-radius: 50%;
       cursor: pointer;
     }
+    /* Kayan şarkı adı için yeni stil */
+    #song-title {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(15, 20, 48, 0.8);
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
+    }
+    .marquee-text {
+      display: inline-block;
+      padding-left: 100%; /* Metnin tam ekran dışından başlaması için */
+      animation: marquee 15s linear infinite;
+    }
+    @keyframes marquee {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-100%, 0); }
+    }
   </style>
 </head>
 <body>
@@ -241,6 +264,11 @@
       Points — Yellow:50 • Red:10 • Blue:2.5 • White:1
     </div>
     <div class="audio-controls">
+      <button id="prevBtn" class="audio-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18 18V6H16v12h2zM6 18l8.5-6L6 6v12z"/>
+        </svg>
+      </button>
       <button id="playPauseBtn" class="audio-btn">
         <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           <path d="M8 5v14l11-7z"/>
@@ -281,6 +309,9 @@
           <button id="startButton" class="btn">Start!</button>
         </div>
       </div>
+    </div>
+    <div id="song-title">
+        <span class="marquee-text" id="songTitleText"></span>
     </div>
   </main>
   <footer>
@@ -663,22 +694,25 @@
         }
       }
       
-      // --- Audio Control with Playlist ---
+      // --- Müzik Kontrolü ve Çalma Listesi ---
+      // Lütfen "assets/..." kısmındaki dosya yollarını kendi şarkılarınızın yolları ile değiştirin.
       const playlist = [
-        "assets/The Blaze - Territory.mp3",
-        // Please replace this placeholder with the actual path of your second audio file.
-        "assets/The Blaze - Territory.mp3" 
+        { path: "assets/The Blaze - Territory.mp3", title: "The Blaze - Territory" },
+        { path: "assets/Skrillex - Summit.mp3", title: "Skrillex - Summit" },
+        { path: "assets/Gorillaz - Feel Good Inc. (Official Video).mp3", title: "Gorillaz - Feel Good Inc" },
       ];
       let currentTrackIndex = 0;
       
-      const audio = new Audio(playlist[currentTrackIndex]);
+      const audio = new Audio(playlist[currentTrackIndex].path);
       audio.loop = true;
       
       const playPauseBtn = document.getElementById('playPauseBtn');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
       const playIcon = document.getElementById('playIcon');
       const pauseIcon = document.getElementById('pauseIcon');
       const volumeSlider = document.getElementById('volume-slider');
-      const nextBtn = document.getElementById('nextBtn');
+      const songTitleText = document.getElementById('songTitleText');
       let isPlaying = false;
       
       function togglePlayPause() {
@@ -696,21 +730,37 @@
       
       function playNextTrack() {
         currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
-        audio.src = playlist[currentTrackIndex];
+        audio.src = playlist[currentTrackIndex].path;
         audio.load();
         if (isPlaying) {
           audio.play().catch(e => console.error("Audio playback error:", e));
         }
+        updateSongTitleDisplay();
+      }
+
+      function playPreviousTrack() {
+        currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+        audio.src = playlist[currentTrackIndex].path;
+        audio.load();
+        if (isPlaying) {
+          audio.play().catch(e => console.error("Audio playback error:", e));
+        }
+        updateSongTitleDisplay();
+      }
+
+      function updateSongTitleDisplay() {
+        songTitleText.textContent = playlist[currentTrackIndex].title;
       }
       
       playPauseBtn.addEventListener('click', togglePlayPause);
       nextBtn.addEventListener('click', playNextTrack);
+      prevBtn.addEventListener('click', playPreviousTrack);
       
       volumeSlider.addEventListener('input', (e) => {
         audio.volume = e.target.value;
       });
 
-      // Automatic play on game start
+      // Oyun başladığında otomatik oynatma ve şarkı adını güncelleme
       startButton.addEventListener('click', () => {
         reset();
         if (!isPlaying) {
@@ -719,10 +769,12 @@
           pauseIcon.style.display = 'block';
           isPlaying = true;
         }
+        updateSongTitleDisplay();
       });
       
-      // --- Initial call to show how to play screen ---
+      // --- Başlangıçta nasıl oynanır ekranını gösterme ve şarkı adını güncelleme ---
       resize();
+      updateSongTitleDisplay();
     })();
   </script>
 </body>
